@@ -1,0 +1,5 @@
+# Folders not to commit (Databricks Free — local/reference only)
+DataSet/
+docs/
+Orientation/
+plan/
