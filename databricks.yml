@@ -1,0 +1,14 @@
+# Databricks Asset Bundle (DABs) - aligned to this project
+bundle:
+  name: v4c-databricks-capstone
+
+resources:
+  jobs:
+
+targets:
+  dev:
+    workspace:
+      host: https://dbc-38c502e9-24ad.cloud.databricks.com
+
+
+   
