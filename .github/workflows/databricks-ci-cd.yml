@@ -1,0 +1,16 @@
+# Minimal GitHub Actions workflow for Databricks (DABs)
+# Trigger on push to dev; extend as needed for your workspace and bundle deploy.
+name: Databricks CI/CD
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check bundle
+        run: |
+          if [ -f databricks.yml ]; then echo "databricks.yml found"; else echo "databricks.yml missing"; exit 1; fi
+      # Add databricks bundle validate / deploy steps when workspace and credentials are configured
