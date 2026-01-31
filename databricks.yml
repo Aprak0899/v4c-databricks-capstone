@@ -4,6 +4,33 @@ bundle:
 
 resources:
   jobs:
+    # Data Chunking: CSV→JSON then CSV→XML. On Free Edition (serverless only),
+    # replace job_clusters with existing_cluster_id per task (use your cluster ID from Compute).
+    data_chunking:
+      name: Data Chunking
+      job_clusters:
+        - job_cluster_key: main
+          new_cluster:
+            spark_version: 14.3.x-scala2.12
+            node_type_id: Standard_DS3_v2
+            num_workers: 0
+      tasks:
+        - task_key: CSV_to_JSON
+          job_cluster_key: main
+          notebook_task:
+            notebook_path: src/notebooks/Chunks/Convert CSV Data to JSON with Audit Columns
+            base_parameters:
+              input_path: /Volumes/dev_automotive/landing/landing_raw/catalogs.csv
+              output_path: /Volumes/dev_automotive/landing/landing_raw/catalogs.json
+        - task_key: CSV_to_XML
+          depends_on:
+            - task_key: CSV_to_JSON
+          job_cluster_key: main
+          notebook_task:
+            notebook_path: src/notebooks/Chunks/Convert CSV Data to XML with Audit Columns
+            base_parameters:
+              input_path: /Volumes/dev_automotive/landing/landing_raw/final_geografic.csv
+              output_path: /Volumes/dev_automotive/landing/landing_raw/final_geografic.xml
 
 targets:
   dev:
