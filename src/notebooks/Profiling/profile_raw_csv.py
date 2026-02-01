@@ -1,0 +1,165 @@
+# Databricks notebook source
+# MAGIC %md
+# MAGIC ## Part 1: CSV validation (pre–Bronze)
+# MAGIC Two-phase: raw string read vs inferred schema. Compare row counts + null inflation; fail fast on malformed. Serverless-safe.
+
+# COMMAND ----------
+
+dbutils.widgets.text("base_path", "/Volumes/dev_automotive/landing/landing_raw/", "Base path (volume)")
+base_path = dbutils.widgets.get("base_path").strip().rstrip("/")
+
+# COMMAND ----------
+
+# (file_name, csv_sep) — comma for 1_main, 1_photo, 1_text
+CSV_FILES = [
+    ("1_main.csv", ","),
+    ("1_photo.csv", ","),
+    ("1_text.csv", ","),
+]
+
+# COMMAND ----------
+
+from pyspark.sql import functions as F
+
+
+def validate_csv(path: str, sep: str = ",") -> None:
+    """
+    Pre-Bronze CSV validation (serverless-safe).
+    - Phase 1: raw string read (no schema)
+    - Phase 2: inferred schema read
+    - Compare row counts + null inflation
+    - Fail fast on malformed indicators
+    """
+    print(f"\n{'='*60}\nValidating CSV: {path}\n{'='*60}")
+
+    # ----------------------------
+    # Phase 1: RAW (all strings)
+    # ----------------------------
+    df_raw = (
+        spark.read
+        .option("header", True)
+        .option("inferSchema", False)
+        .option("mode", "PERMISSIVE")
+        .option("sep", sep)
+        .option("encoding", "utf-8")
+        .csv(path)
+    )
+    raw_cols = df_raw.columns
+    raw_stats = (
+        df_raw
+        .agg(
+            F.count("*").alias("row_count"),
+            *[
+                F.sum(
+                    F.when(
+                        F.col(c).isNull() | (F.trim(F.col(c)) == ""),
+                        1
+                    ).otherwise(0)
+                ).alias(f"{c}__empty")
+                for c in raw_cols
+            ]
+        )
+        .collect()[0]
+    )
+    rows_before = raw_stats["row_count"]
+    if rows_before == 0:
+        raise Exception("❌ CSV has zero records")
+
+    print("[RAW READ — no schema]")
+    print(f"  Rows    : {rows_before:,}")
+    print(f"  Columns : {len(raw_cols)}\n")
+    for c in raw_cols:
+        print(f"  {c:<12}: empty/null-like = {raw_stats[f'{c}__empty']:,}")
+
+    # ----------------------------
+    # Phase 2: INFERRED SCHEMA
+    # ----------------------------
+    df_inf = (
+        spark.read
+        .option("header", True)
+        .option("inferSchema", True)
+        .option("mode", "PERMISSIVE")
+        .option("sep", sep)
+        .option("encoding", "utf-8")
+        .csv(path)
+    )
+    inf_cols = df_inf.columns
+    inf_stats = (
+        df_inf
+        .agg(
+            F.count("*").alias("row_count"),
+            *[
+                F.sum(F.when(F.col(c).isNull(), 1).otherwise(0)).alias(f"{c}__null")
+                for c in inf_cols
+            ]
+        )
+        .collect()[0]
+    )
+    rows_after = inf_stats["row_count"]
+
+    print("\n[INFERRED SCHEMA]")
+    print(f"  Rows    : {rows_after:,}")
+    print(f"  Columns : {len(inf_cols)}\n")
+    for c in inf_cols:
+        print(f"  {c:<12}: nulls = {inf_stats[f'{c}__null']:,}")
+
+    # ----------------------------
+    # Structural checks
+    # ----------------------------
+    if raw_cols != inf_cols:
+        raise Exception("❌ Column mismatch after schema inference (possible CSV shift)")
+    if rows_after != rows_before:
+        raise Exception(
+            f"❌ Row count changed after schema inference "
+            f"({rows_before:,} → {rows_after:,})"
+        )
+
+    # ----------------------------
+    # Null inflation check (fail only when nulls *increase* after schema)
+    # ----------------------------
+    print("\n[NULL INFLATION CHECK]")
+    for c in raw_cols:
+        before = raw_stats[f"{c}__empty"] or 0
+        after = inf_stats[f"{c}__null"] or 0
+        if after == before:
+            print(f"  {c:<12}: OK (no change)")
+            continue
+        diff = after - before
+        pct = 100.0 if before == 0 else (diff / before) * 100
+        sign = "+" if diff >= 0 else ""
+        if after > before:
+            # Null inflation: empty/null-like became more nulls after cast — fail
+            print(
+                f"  {c:<12}: "
+                f"{before:,} → {after:,} "
+                f"({sign}{diff:,} | {sign}{pct:.2f}%) ❌"
+            )
+            raise Exception(
+                f"❌ Null inflation detected for column '{c}' "
+                f"({before:,} → {after:,})"
+            )
+        # Nulls decreased (e.g. some empty strings became non-null) — OK
+        print(
+            f"  {c:<12}: "
+            f"{before:,} → {after:,} "
+            f"({sign}{diff:,} | {sign}{pct:.2f}%) OK (nulls decreased)"
+        )
+
+    # ----------------------------
+    # Lightweight sample
+    # ----------------------------
+    print("\n[SAMPLE — inferred schema]")
+    df_inf.limit(5).show(truncate=50)
+    print("\n✅ CSV PASSED PRE-BRONZE VALIDATION")
+
+
+# COMMAND ----------
+
+for name, sep in CSV_FILES:
+    path = f"{base_path}/{name}"
+    validate_csv(path, sep)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Part 1 (CSV) done. Run Part 2 (JSON) and Part 3 (XML) via main notebook or separately.
