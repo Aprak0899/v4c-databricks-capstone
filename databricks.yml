@@ -1,6 +1,15 @@
 bundle:
   name: v4c-databricks-capstone
 
+variables:
+  # Base path for landing/raw data (override per target if needed)
+  landing_base: /Volumes/dev_automotive/landing/landing_raw
+  # Data Chunking job file names (paths built from landing_base)
+  csv_to_json_input: catalogs.csv
+  csv_to_json_output: catalogs.json
+  csv_to_xml_input: final_geografic.csv
+  csv_to_xml_output: final_geografic.xml
+
 resources:
   jobs:
     data_chunking:
@@ -10,8 +19,8 @@ resources:
           notebook_task:
             notebook_path: src/jobs/data_chunking/csv_to_json
             base_parameters:
-              input_path: /Volumes/dev_automotive/landing/landing_raw/catalogs.csv
-              output_path: /Volumes/dev_automotive/landing/landing_raw/catalogs.json
+              input_path: "{{ landing_base }}/{{ csv_to_json_input }}"
+              output_path: "{{ landing_base }}/{{ csv_to_json_output }}"
           compute:
             serverless: true
 
@@ -21,8 +30,8 @@ resources:
           notebook_task:
             notebook_path: src/jobs/data_chunking/csv_to_xml
             base_parameters:
-              input_path: /Volumes/dev_automotive/landing/landing_raw/final_geografic.csv
-              output_path: /Volumes/dev_automotive/landing/landing_raw/final_geografic.xml
+              input_path: "{{ landing_base }}/{{ csv_to_xml_input }}"
+              output_path: "{{ landing_base }}/{{ csv_to_xml_output }}"
           compute:
             serverless: true
 
@@ -30,3 +39,6 @@ targets:
   dev:
     workspace:
       host: https://dbc-38c502e9-24ad.cloud.databricks.com
+    # Optional: override variables per target (e.g. different catalog/volume for prod)
+    # variables:
+    #   landing_base: /Volumes/prod_automotive/landing/landing_raw
