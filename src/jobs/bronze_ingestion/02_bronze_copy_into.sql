@@ -42,7 +42,7 @@ FROM (
     current_timestamp() AS load_dt,
     _metadata.file_path AS source,
     _rescued_data
-  FROM 'file:/Volumes/dev_automotive/landing/landing_raw/1_photo.csv'
+  FROM '/Volumes/dev_automotive/landing/landing_raw/1_photo.csv'
 )
 FILEFORMAT = CSV
 FORMAT_OPTIONS (
@@ -59,7 +59,7 @@ FROM (
     current_timestamp() AS load_dt,
     _metadata.file_path AS source,
     _rescued_data
-  FROM 'file:/Volumes/dev_automotive/landing/landing_raw/1_text.csv'
+  FROM '/Volumes/dev_automotive/landing/landing_raw/1_text.csv'
 )
 FILEFORMAT = CSV
 FORMAT_OPTIONS (
@@ -79,5 +79,5 @@ SELECT * FROM dev_automotive.bronze.text_raw LIMIT 5;
 -- -----------------------------------------------------------------------------
 -- Future: Load multiple files with pattern matching
 -- -----------------------------------------------------------------------------
--- FROM 'file:/Volumes/dev_automotive/landing/landing_raw/*_photo.csv'
--- FROM 'file:/Volumes/dev_automotive/landing/landing_raw/*_text.csv'
+-- FROM '/Volumes/dev_automotive/landing/landing_raw/*_photo.csv'
+-- FROM '/Volumes/dev_automotive/landing/landing_raw/*_text.csv'
