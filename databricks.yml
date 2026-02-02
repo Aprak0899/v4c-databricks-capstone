@@ -8,7 +8,7 @@ resources:
       tasks:
         - task_key: csv_to_json
           notebook_task:
-            notebook_path: src/notebooks/Chunks/Convert CSV Data to JSON with Audit Columns
+            notebook_path: src/jobs/data_chunking/csv_to_json
             base_parameters:
               input_path: /Volumes/dev_automotive/landing/landing_raw/catalogs.csv
               output_path: /Volumes/dev_automotive/landing/landing_raw/catalogs.json
@@ -19,7 +19,7 @@ resources:
           depends_on:
             - task_key: csv_to_json
           notebook_task:
-            notebook_path: src/notebooks/Chunks/Convert CSV Data to XML with Audit Columns
+            notebook_path: src/jobs/data_chunking/csv_to_xml
             base_parameters:
               input_path: /Volumes/dev_automotive/landing/landing_raw/final_geografic.csv
               output_path: /Volumes/dev_automotive/landing/landing_raw/final_geografic.xml
