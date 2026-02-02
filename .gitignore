@@ -1,7 +1,8 @@
-# Folders not to commit (Databricks Free — local/reference only)
-DataSet/
-docs/
-Orientation/
-plan/
-Plan V1/
-Data profiling/
+# Only these are committed: .github, resources, src, tests, databricks.yml, README.md
+# Everything below is local/reference only — do not commit
+
+local/
+
+# Root-level files not to commit
+.cursorignore
+*.pdf
