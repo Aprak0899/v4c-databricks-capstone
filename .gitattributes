@@ -1,0 +1,8 @@
+# Normalize line endings: use LF in repo so no CRLF warning on Windows
+* text=auto eol=lf
+*.ipynb text eol=lf
+*.sql text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
