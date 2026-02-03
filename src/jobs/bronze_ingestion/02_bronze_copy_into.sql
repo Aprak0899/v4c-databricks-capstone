@@ -11,10 +11,11 @@
 -- -----------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS dev_automotive.bronze.photo_raw (
-  photo_seq_id INT,
+  photo_seq_id BIGINT,
   photo_url STRING,
   id DOUBLE,
   load_dt TIMESTAMP,
+  modification_dt TIMESTAMP,
   source STRING,
   _rescued_data STRING              -- Absorbs new columns if CSV schema changes
 ) USING DELTA;
@@ -23,6 +24,7 @@ CREATE TABLE IF NOT EXISTS dev_automotive.bronze.text_raw (
   id DOUBLE,
   `text` STRING,
   load_dt TIMESTAMP,
+  modification_dt TIMESTAMP,
   source STRING,
   _rescued_data STRING              -- Absorbs new columns if CSV schema changes
 ) USING DELTA;
@@ -36,10 +38,11 @@ CREATE TABLE IF NOT EXISTS dev_automotive.bronze.text_raw (
 COPY INTO dev_automotive.bronze.photo_raw
 FROM (
   SELECT
-    _c0 AS photo_seq_id,
+    TRY_CAST(_c0 AS BIGINT) AS photo_seq_id,
     photo_url,
-    id,
+    TRY_CAST(id AS DOUBLE) AS id,
     current_timestamp() AS load_dt,
+    _metadata.file_modification_time AS modification_dt,
     _metadata.file_path AS source,
     _rescued_data
   FROM '/Volumes/dev_automotive/landing/landing_raw/1_photo.csv'
@@ -48,15 +51,17 @@ FILEFORMAT = CSV
 FORMAT_OPTIONS (
   'header' = 'true',
   'rescuedDataColumn' = '_rescued_data'
-);
+)
+COPY_OPTIONS ('mergeSchema' = 'true');
 
 -- Load text
 COPY INTO dev_automotive.bronze.text_raw
 FROM (
   SELECT
-    id,
+    TRY_CAST(id AS DOUBLE) AS id,
     `text`,
     current_timestamp() AS load_dt,
+    _metadata.file_modification_time AS modification_dt,
     _metadata.file_path AS source,
     _rescued_data
   FROM '/Volumes/dev_automotive/landing/landing_raw/1_text.csv'
@@ -64,8 +69,11 @@ FROM (
 FILEFORMAT = CSV
 FORMAT_OPTIONS (
   'header' = 'true',
-  'rescuedDataColumn' = '_rescued_data'
-);
+  'rescuedDataColumn' = '_rescued_data',
+  'multiLine' = 'true',              
+  'escape' = '"'                     
+)
+COPY_OPTIONS ('mergeSchema' = 'true');
 
 
 -- -----------------------------------------------------------------------------
