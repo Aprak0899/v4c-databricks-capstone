@@ -7,3 +7,6 @@ Plan V1/
 # Root-level files not to commit
 .cursorignore
 *.pdf
+DABS_CHECK.md
+FOLDER_AND_NAMING_REVIEW.md
+MERGE_TO_DEV_STEPS.md
