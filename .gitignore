@@ -2,6 +2,7 @@
 # Everything below is local/reference only — do not commit
 
 local/
+Plan V1/
 
 # Root-level files not to commit
 .cursorignore
