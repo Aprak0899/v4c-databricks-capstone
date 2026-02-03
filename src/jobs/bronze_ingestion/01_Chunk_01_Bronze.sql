@@ -80,8 +80,8 @@ COPY_OPTIONS ('mergeSchema' = 'true');
 -- Step 3: Quick view (optional - just to see what loaded)
 -- -----------------------------------------------------------------------------
 
-SELECT * FROM dev_automotive.bronze.photo_raw LIMIT 5;
-SELECT * FROM dev_automotive.bronze.text_raw LIMIT 5;
+-- SELECT * FROM dev_automotive.bronze.photo_raw LIMIT 5;
+-- SELECT * FROM dev_automotive.bronze.text_raw LIMIT 5;
 
 
 -- -----------------------------------------------------------------------------
