@@ -1,0 +1,11 @@
+# Ruff config: avoid false positives from Databricks runtime (dbutils, spark, notebook style)
+# See: https://docs.astral.sh/ruff/configuration/
+
+[lint]
+# In src/ we have notebooks and scripts that run only on Databricks:
+# - F821: "undefined name" for dbutils and spark (provided by Databricks at runtime)
+# - E402: "import not at top" (Databricks uses # COMMAND ---------- and widgets before imports)
+# - F541: f-string without placeholders (common in print statements)
+# - E702: multiple statements on one line (notebook style)
+[lint.per-file-ignores]
+"src/**" = ["F821", "E402", "F541", "E702"]

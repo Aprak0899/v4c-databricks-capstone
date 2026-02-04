@@ -120,7 +120,7 @@ path_df.select(
 
 # COMMAND ----------
 
-from pyspark.sql.functions import explode, explode_outer, sum
+from pyspark.sql.functions import explode, sum
 
 # Sample JSON-like data
 json_data = [
@@ -152,8 +152,7 @@ df_filtered.groupBy("id").agg(sum("order.price").alias("total_spent")).show()
 
 # COMMAND ----------
 
-from pyspark.sql.functions import from_json, to_json
-from pyspark.sql.types import StructType, StructField, StringType, ArrayType
+from pyspark.sql.types import StructType, StructField, StringType
 
 # Parse a string column containing JSON into a STRUCT
 # schema = StructType([StructField("device", StringType()), StructField("geo", StructType([...]))])
