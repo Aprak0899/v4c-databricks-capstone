@@ -1,16 +1,35 @@
-# Minimal GitHub Actions workflow for Databricks (DABs)
-# Trigger on push to dev; extend as needed for your workspace and bundle deploy.
+# Databricks Asset Bundle CI/CD: validate on every push to dev, deploy when secrets are set.
+# Required secrets (for deploy): DATABRICKS_HOST, DATABRICKS_TOKEN (or use OAuth / workload identity).
 name: Databricks CI/CD
 on:
   push:
     branches: [dev]
   workflow_dispatch:
 jobs:
-  build:
+  validate-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check bundle
+
+      - name: Check bundle file
         run: |
           if [ -f databricks.yml ]; then echo "databricks.yml found"; else echo "databricks.yml missing"; exit 1; fi
-      # Add databricks bundle validate / deploy steps when workspace and credentials are configured
+
+      - name: Set up Databricks CLI
+        uses: databricks/setup-cli@v1
+        with:
+          version: 0.280.0
+
+      - name: Validate bundle
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: databricks bundle validate -t dev
+        continue-on-error: true
+
+      - name: Deploy bundle to dev
+        if: ${{ secrets.DATABRICKS_TOKEN != '' }}
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: databricks bundle deploy -t dev
