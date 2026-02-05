@@ -2,43 +2,56 @@ bundle:
   name: v4c-databricks-capstone
 
 variables:
-  # Base path for landing/raw data (override per target if needed)
-  landing_base: /Volumes/dev_automotive/landing/landing_raw
-  # Data Chunking job file names (paths built from landing_base)
-  csv_to_json_input: catalogs.csv
-  csv_to_json_output: catalogs.json
-  csv_to_xml_input: final_geografic.csv
-  csv_to_xml_output: final_geografic.xml
+  landing_base:
+    default: /Volumes/dev_automotive/landing/landing_raw
+  sql_warehouse_id:
+    default: ""
+  csv_to_json_input:
+    default: catalogs.csv
+  csv_to_json_output:
+    default: catalogs.json
+  csv_to_xml_input:
+    default: final_geografic.csv
+  csv_to_xml_output:
+    default: final_geografic.xml
 
 resources:
   jobs:
+    Chunk_1_job:
+      name: Chunk 1 job
+      tasks:
+        - task_key: Bronze_Ingestion_csv
+          sql_task:
+            file:
+              path: src/jobs/chunk_1_ingestion_csv/01_Chunk_01_Bronze.sql
+              source: GIT
+            warehouse_id: 27741dfb3e277ed5
+
     data_chunking:
       name: Data Chunking (Serverless)
       tasks:
         - task_key: csv_to_json
           notebook_task:
-            notebook_path: src/jobs/data_chunking/csv_to_json
+            notebook_path: src/jobs/data_chunking/csv_to_json.ipynb
             base_parameters:
               input_path: "{{ landing_base }}/{{ csv_to_json_input }}"
               output_path: "{{ landing_base }}/{{ csv_to_json_output }}"
-          compute:
-            serverless: true
 
         - task_key: csv_to_xml
           depends_on:
             - task_key: csv_to_json
           notebook_task:
-            notebook_path: src/jobs/data_chunking/csv_to_xml
+            notebook_path: src/jobs/data_chunking/csv_to_xml.ipynb
             base_parameters:
               input_path: "{{ landing_base }}/{{ csv_to_xml_input }}"
               output_path: "{{ landing_base }}/{{ csv_to_xml_output }}"
-          compute:
-            serverless: true
 
 targets:
   dev:
     workspace:
       host: https://dbc-38c502e9-24ad.cloud.databricks.com
+    variables:
+      sql_warehouse_id: ""   # Set to your SQL warehouse ID (e.g. from SQL Warehouse settings)
     # Optional: override variables per target (e.g. different catalog/volume for prod)
     # variables:
     #   landing_base: /Volumes/prod_automotive/landing/landing_raw

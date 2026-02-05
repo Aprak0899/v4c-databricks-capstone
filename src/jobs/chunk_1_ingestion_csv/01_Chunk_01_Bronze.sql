@@ -51,8 +51,7 @@ FILEFORMAT = CSV
 FORMAT_OPTIONS (
   'header' = 'true',
   'rescuedDataColumn' = '_rescued_data'
-)
-COPY_OPTIONS ('mergeSchema' = 'true');
+);
 
 -- Load text
 COPY INTO dev_automotive.bronze.text_raw
@@ -72,8 +71,7 @@ FORMAT_OPTIONS (
   'rescuedDataColumn' = '_rescued_data',
   'multiLine' = 'true',              
   'escape' = '"'                     
-)
-COPY_OPTIONS ('mergeSchema' = 'true');
+);
 
 
 -- -----------------------------------------------------------------------------
