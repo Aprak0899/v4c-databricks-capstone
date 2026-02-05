@@ -1,13 +1,33 @@
 # Minimal GitHub Actions workflow for Databricks (DABs)
-# Trigger on push to dev; extend as needed for your workspace and bundle deploy.
+# - Unit tests run on PR to dev and on push to dev
+# - Build checks bundle and can be extended with deploy
 name: Databricks CI/CD
 on:
   push:
     branches: [dev]
+  pull_request:
+    branches: [dev]
   workflow_dispatch:
 jobs:
-  build:
+  test:
+    name: Unit tests (bronze)
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          pip install pyspark pytest
+      - name: Run bronze unit tests
+        run: |
+          pytest tests/test_chunk_1_bronze_ingestion.py -v
+
+  build:
+    name: Bundle check
+    runs-on: ubuntu-latest
+    needs: test
     steps:
       - uses: actions/checkout@v4
       - name: Check bundle
