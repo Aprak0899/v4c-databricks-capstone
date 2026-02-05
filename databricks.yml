@@ -4,6 +4,8 @@ bundle:
 variables:
   # Base path for landing/raw data (override per target if needed)
   landing_base: /Volumes/dev_automotive/landing/landing_raw
+  # SQL warehouse for SQL tasks (set in target or override here)
+  sql_warehouse_id: ""
   # Data Chunking job file names (paths built from landing_base)
   csv_to_json_input: catalogs.csv
   csv_to_json_output: catalogs.json
@@ -12,6 +14,18 @@ variables:
 
 resources:
   jobs:
+    Chunk_1_job:
+      name: Chunk 1 job
+      tasks:
+        - task_key: Bronze_Ingestion_csv
+          sql_task:
+            file:
+              path: src/jobs/chunk_1_ingestion_csv/01_Chunk_01_Bronze.sql
+              source: GIT
+            warehouse_id: 27741dfb3e277ed5
+      queue:
+        enabled: true
+
     data_chunking:
       name: Data Chunking (Serverless)
       tasks:
@@ -39,6 +53,8 @@ targets:
   dev:
     workspace:
       host: https://dbc-38c502e9-24ad.cloud.databricks.com
+    variables:
+      sql_warehouse_id: ""   # Set to your SQL warehouse ID (e.g. from SQL Warehouse settings)
     # Optional: override variables per target (e.g. different catalog/volume for prod)
     # variables:
     #   landing_base: /Volumes/prod_automotive/landing/landing_raw
