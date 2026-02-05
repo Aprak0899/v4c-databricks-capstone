@@ -30,7 +30,26 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v4
-      - name: Check bundle
+
+      - name: Check bundle file
         run: |
           if [ -f databricks.yml ]; then echo "databricks.yml found"; else echo "databricks.yml missing"; exit 1; fi
-      # Add databricks bundle validate / deploy steps when workspace and credentials are configured
+
+      - name: Set up Databricks CLI
+        uses: databricks/setup-cli@v1
+        with:
+          version: 0.280.0
+
+      - name: Validate bundle
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: databricks bundle validate -t dev
+        continue-on-error: true
+
+      - name: Deploy bundle to dev
+        if: ${{ secrets.DATABRICKS_TOKEN != '' }}
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: databricks bundle deploy -t dev

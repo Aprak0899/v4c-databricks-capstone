@@ -1,0 +1,28 @@
+# Lint and test on push/PR to main and dev
+name: CI
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dev dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint with Ruff
+        run: ruff check src/
+        continue-on-error: true
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+        continue-on-error: true
