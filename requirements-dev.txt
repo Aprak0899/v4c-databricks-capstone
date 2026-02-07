@@ -1,3 +1,4 @@
 # CI and local development (lint, test)
 ruff>=0.8.0
 pytest>=8.0.0
+pyspark>=3.5.0
