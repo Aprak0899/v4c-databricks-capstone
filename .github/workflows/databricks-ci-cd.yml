@@ -45,8 +45,9 @@ jobs:
         run: databricks bundle validate -t dev
         continue-on-error: true
 
+      # Deploy only on push to dev (not on PR). If secrets are missing, step will fail at run time.
       - name: Deploy bundle to dev
-        if: ${{ secrets.DATABRICKS_TOKEN != '' }}
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
