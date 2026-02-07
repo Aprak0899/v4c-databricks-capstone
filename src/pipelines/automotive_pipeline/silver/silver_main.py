@@ -11,7 +11,7 @@ dlt.create_target_table(
     }
 )
 
-# 2. View for Transformation (Day 5 Normalization)
+# 2. View for Transformation (Day 5 Normalization( )
 @dlt.view
 def main_silver_cleaned():
     """
