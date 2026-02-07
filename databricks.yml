@@ -23,9 +23,16 @@ resources:
         - task_key: Bronze_Ingestion_csv
           sql_task:
             file:
-              path: src/jobs/chunk_1_ingestion_csv/01_Chunk_01_Bronze.sql
-              source: GIT
+              path: /Workspace/Users/adityaprakash0598@gmail.com/v4c-databricks-capstone/src/jobs/chunk_1_ingestion_csv/01_Chunk_01_Bronze.sql
+              source: WORKSPACE
             warehouse_id: 27741dfb3e277ed5
+        - task_key: XML_geographic_ingestion
+          notebook_task:
+            notebook_path: /Workspace/Users/adityaprakash0598@gmail.com/v4c-databricks-capstone/src/jobs/chunk_4_ingestion_xml/02_bronze_ingest_xml
+            source: WORKSPACE
+      queue:
+        enabled: true
+      performance_target: PERFORMANCE_OPTIMIZED
 
     data_chunking:
       name: Data Chunking (Serverless)
