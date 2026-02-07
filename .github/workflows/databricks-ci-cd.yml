@@ -34,7 +34,7 @@ jobs:
           if [ -f databricks.yml ]; then echo "databricks.yml found"; else echo "databricks.yml missing"; exit 1; fi
 
       - name: Set up Databricks CLI
-        uses: databricks/setup-cli@v1
+        uses: databricks/setup-cli@main
         with:
           version: 0.280.0
 
