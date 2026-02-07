@@ -7,7 +7,6 @@ from pyspark.sql.functions import col
 # ---------------------------------------------------------------------
 LANDING_PATH    = "/Volumes/dev_automotive/landing/landing_raw/"
 
-
 EXPLICIT_SCHEMA = StructType([
     StructField("cost",           DoubleType(),  True),
     StructField("currency",       StringType(),  True),
@@ -52,12 +51,9 @@ def read_bronze_csv():
 # _rescued_data & _corrupt_record already in * from reader options
 # ---------------------------------------------------------------------
 def add_lineage(df):
-    return df.select(
-        "*",
-        col("_metadata.file_path").alias("source_file_path"),
-        col("_metadata.file_name").alias("source_file_name"),
-        col("_metadata.file_modification_time").alias("source_file_modified_at"),
-    )
+    return df.withColumn("source_file_path", col("_metadata.file_path")) \
+             .withColumn("source_file_name", col("_metadata.file_name")) \
+             .withColumn("source_file_modified_at", col("_metadata.file_modification_time"))
 
 # ---------------------------------------------------------------------
 # Lakeflow Table — returning df is the write
